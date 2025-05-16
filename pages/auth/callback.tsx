@@ -1,21 +1,26 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
-
-const supabase = createPagesBrowserClient();
+import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
 export default function Callback() {
   const router = useRouter();
+  const supabase = createBrowserSupabaseClient();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
         router.replace('/dashboard');
       } else {
         router.replace('/login');
       }
-    });
-  }, [router]);
+    };
+
+    checkSession();
+  }, [router, supabase]);
 
   return <p>Loading...</p>;
 }
