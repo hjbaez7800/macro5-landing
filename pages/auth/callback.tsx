@@ -1,11 +1,8 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { createBrowserClient } from '@supabase/ssr';
+import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createPagesBrowserClient();
 
 export default function Callback() {
   const router = useRouter();
