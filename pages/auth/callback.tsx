@@ -2,23 +2,23 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { createBrowserClient } from '@supabase/ssr';
 
-export default function AuthCallback() {
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+export default function Callback() {
   const router = useRouter();
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
-        router.push('/dashboard');
+        router.replace('/dashboard'); // ✅ REDIRECT TO DASHBOARD
       } else {
-        router.push('/login');
+        router.replace('/login'); // Or show error
       }
     });
-  }, [router]);
+  }, []);
 
-  return <p>Redirecting...</p>;
+  return <p>Loading...</p>;
 }
