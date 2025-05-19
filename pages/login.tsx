@@ -3,38 +3,46 @@ import { supabase } from '../lib/supabaseClient';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setMessage('');
+
     const { error } = await supabase.auth.signInWithOtp({ email });
 
-    if (error) setError(error.message);
-    else setSent(true);
+    if (error) {
+      setMessage(`Error: ${error.message}`);
+    } else {
+      setMessage('Check your email for a magic link!');
+    }
+
+    setLoading(false);
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '100px auto', textAlign: 'center' }}>
-      <h1>Login to Macro5™</h1>
-      {!sent ? (
-        <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: 10, marginBottom: 10 }}
-          />
-          <button type="submit" style={{ padding: 10, width: '100%' }}>
-            Send Magic Link
-          </button>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-        </form>
-      ) : (
-        <p>Check your email for the magic link!</p>
-      )}
+    <div className="flex items-center justify-center min-h-screen bg-white px-4">
+      <form onSubmit={handleLogin} className="w-full max-w-md space-y-6">
+        <h1 className="text-2xl font-bold text-center">Login to Macro5™</h1>
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-500"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition"
+        >
+          {loading ? 'Sending...' : 'Send Magic Link'}
+        </button>
+        {message && <p className="text-center text-sm text-gray-600">{message}</p>}
+      </form>
     </div>
   );
 }
