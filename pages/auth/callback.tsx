@@ -1,24 +1,31 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { createBrowserClient } from '@supabase/ssr';
-
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabase } from '../../lib/supabaseClient';
 
 export default function Callback() {
   const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        router.replace('/dashboard'); // ✅ REDIRECT TO DASHBOARD
-      } else {
-        router.replace('/login'); // Or show error
-      }
-    });
-  }, []);
+    const checkSession = async (retryCount = 0) => {
+      const { data, error } = await supabase.auth.getSession();
+      console.log("SESSION CHECK", data);
 
-  return <p>Loading...</p>;
+      if (error) {
+        console.error("Supabase session error:", error.message);
+      }
+
+      if (data?.session) {
+        router.replace('/dashboard');
+      } else if (retryCount < 3) {
+        // Retry up to 3 times with delay
+        setTimeout(() => checkSession(retryCount + 1), 1500);
+      } else {
+        router.replace('/login');
+      }
+    };
+
+    checkSession();
+  }, [router]);
+
+  return <p style={{ textAlign: 'center', marginTop: '100px' }}>Authenticating, please wait...</p>;
 }
